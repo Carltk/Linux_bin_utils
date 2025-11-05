@@ -1,16 +1,37 @@
 #!/usr/bin/env bash
 set -e
 set -u
+set -o pipefail
 
 if ! command -v gh &> /dev/null
 then
     echo "gh command could not be found, please install it to use this script"
-    exit
+    exit 1
 fi
 
 git init
 git add .
-git commit -m "Initial commit"
+
+# Only commit if there are staged changes
+if ! git diff-index --quiet HEAD --; then
+    git commit -m "Initial commit"
+fi
+
 repo_name="Linux_bin_utils"
-gh repo create "Carltk/$repo_name" --public --source=. --remote=origin
-git push origin master
+
+# Only create repo if origin remote doesn't exist
+if ! git remote get-url origin &> /dev/null; then
+    gh repo create "Carltk/$repo_name" --public --source=. --remote=origin
+fi
+
+# Push to origin, setting upstream if needed
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ -n "$current_branch" ]; then
+    if ! git config "branch.$current_branch.remote" &> /dev/null; then
+        git push --set-upstream origin "$current_branch"
+    else
+        git push
+    fi
+else
+    echo "Not on a branch, cannot push."
+fi
