@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+set -u
+set -o pipefail
+
+exec mpv --no-video --ytdl-format=worstaudio "$@"

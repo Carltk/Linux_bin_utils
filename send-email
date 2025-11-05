@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# Default recipient
+DEFAULT_RECIPIENT="carl@carlk.org"
+
+# Initialize variables
+recipient=""
+subject=""
+attachment=""
+body=""
+
+# Parse command-line options
+while getopts "r:s:a:b:" opt; do
+  case $opt in
+    r) recipient="$OPTARG" ;;
+    s) subject="$OPTARG" ;;
+    a) attachment="$OPTARG" ;;
+    b) body="$OPTARG" ;;
+    \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+  esac
+done
+
+# Set recipient to default if not provided
+if [ -z "$recipient" ]; then
+  recipient="$DEFAULT_RECIPIENT"
+fi
+
+# Check for required options
+if [ -z "$subject" ] || [ -z "$body" ]; then
+  echo "Usage: $0 -s <subject> -b <body> [-r <recipient>] [-a <attachment>]"
+  exit 1
+fi
+
+# Construct and execute the mutt command
+if [ -n "$attachment" ]; then
+  echo "$body" | mutt -s "$subject" -e "set smtp_url='smtp://mailserver.datafuel.local:25'" -e "set ssl_starttls=no" -e "set ssl_force_tls=no" -a "$attachment" -- "$recipient"
+else
+  echo "$body" | mutt -s "$subject" -e "set smtp_url='smtp://mailserver.datafuel.local:25'" -e "set ssl_starttls=no" -e "set ssl_force_tls=no" -- "$recipient"
+fi
+
+echo "Email sent to $recipient"
