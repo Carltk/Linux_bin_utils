@@ -13,3 +13,4 @@ git add .
 git commit -m "Initial commit"
 repo_name="Linux_bin_utils"
 gh repo create "Carltk/$repo_name" --public --source=. --remote=origin
+git push origin master
