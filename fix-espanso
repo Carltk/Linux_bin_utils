@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# espanso-fix - Restart espanso to reconnect to input devices
+# Fixes the common issue where espanso stops detecting keyboard input
+# after device disconnection (common on Wayland)
+
+set -e
+
+echo "Stopping espanso..."
+espanso stop 2>/dev/null || true
+sleep 1
+
+echo "Starting espanso..."
+espanso start
+
+echo "Espanso restarted successfully"
+espanso status

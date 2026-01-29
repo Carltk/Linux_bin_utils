@@ -1,5 +1,26 @@
 #!/usr/bin/env bash
 
+# Check for help option
+for arg in "$@"; do
+  if [[ "$arg" == "--help" ]]; then
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -r <recipient>    Recipient email address"
+    echo "  -s <subject>      Subject of the email"
+    echo "  -a <attachment>   Path to attachment file"
+    echo "  -b <body>         Body of the email"
+    echo "  --help            Show this usage information"
+    echo ""
+    echo "Required Environment Variables:"
+    echo "  DEFAULT_ADMIN_EMAIL"
+    echo "  SCRIPT_SMTP_SERVER"
+    echo "  SCRIPT_SMTP_PORT"
+    echo "  SCRIPT_SMTP_LOGIN"
+    echo "  SCRIPT_SMTP_KEY"
+    exit 0
+  fi
+done
+
 # Check for required environment variables
 if [ -z "$DEFAULT_ADMIN_EMAIL" ] || [ -z "$SCRIPT_SMTP_SERVER" ] || [ -z "$SCRIPT_SMTP_PORT" ] || [ -z "$SCRIPT_SMTP_LOGIN" ] || [ -z "$SCRIPT_SMTP_KEY" ]; then
   echo "Error: Please set the required environment variables: DEFAULT_ADMIN_EMAIL, SCRIPT_SMTP_SERVER, SCRIPT_SMTP_PORT, SCRIPT_SMTP_LOGIN, SCRIPT_SMTP_KEY"
@@ -37,14 +58,19 @@ if [ -z "$subject" ] || [ -z "$body" ]; then
   exit 1
 fi
 
-# Construct the smtp_url
-smtp_url="smtp://${SCRIPT_SMTP_LOGIN//\@/%40}:${SCRIPT_SMTP_KEY}@${SCRIPT_SMTP_SERVER}:${SCRIPT_SMTP_PORT}"
-
-# Construct and execute the mutt command
-if [ -n "$attachment" ]; then
-  echo "$body" | mutt -s "$subject" -e "set from='$DEFAULT_ADMIN_EMAIL'" -e "set realname='Carl Kamper'" -e "set smtp_url='$smtp_url'" -e "set ssl_starttls=yes" -a "$attachment" -- "$recipient"
+# Execute pop command
+if [[ "$SCRIPT_SMTP_LOGIN" == "resend" ]]; then
+  # Use Resend API support if login is 'resend'
+  cmd=(pop --from "$DEFAULT_ADMIN_EMAIL" --to "$recipient" --subject "$subject" --body "$body" --resend.key "$SCRIPT_SMTP_KEY")
 else
-  echo "$body" | mutt -s "$subject" -e "set from='$DEFAULT_ADMIN_EMAIL'" -e "set realname='Carl Kamper'" -e "set smtp_url='$smtp_url'" -e "set ssl_starttls=yes" -- "$recipient"
+  # Use generic SMTP
+  cmd=(pop --from "$DEFAULT_ADMIN_EMAIL" --to "$recipient" --subject "$subject" --body "$body" --smtp.host "$SCRIPT_SMTP_SERVER" --smtp.port "$SCRIPT_SMTP_PORT" --smtp.username "$SCRIPT_SMTP_LOGIN" --smtp.password "$SCRIPT_SMTP_KEY" --smtp.encryption "ssl")
+fi
+
+if [[ -n "$attachment" ]]; then
+  "${cmd[@]}" --attach "$attachment"
+else
+  "${cmd[@]}"
 fi
 
 echo "Email sent to $recipient"

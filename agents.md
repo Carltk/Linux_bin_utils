@@ -50,6 +50,7 @@ This directory, `/home/carl/bin`, contains a comprehensive collection of persona
 - **transcribe**: Audio transcription utility
 
 ### System Utilities
+- **fix-espanso**: Restarts espanso to reconnect to input devices (fixes Wayland keyboard detection issues)
 - **timer**: Countdown timer with sound and notification alerts
 - **stopwatch**: Timer/stopwatch utility
 - **clock**: Time display utility
