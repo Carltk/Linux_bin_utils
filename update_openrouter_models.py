@@ -13,7 +13,7 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
 # Configuration
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = ""
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 SETTINGS_PATH = os.path.expanduser("~/.factory/settings.json")
 BACKUP_DIR = os.path.expanduser("~/.factory/backups")
