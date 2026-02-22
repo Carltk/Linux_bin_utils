@@ -2,7 +2,7 @@
 """
 Update Factory settings.json with OpenRouter models.
 Ensures openrouter/free appears first, and sorts the rest alphabetically.
-Pricing is shown accurately (FREE for zero‑price models, otherwise $X.XX/M).
+Pricing is shown accurately (FREE for zeroâ€‘price models, otherwise $X.XX/M).
 """
 
 import json
@@ -13,8 +13,13 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
 # Configuration
-OPENROUTER_API_KEY = ""
-OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    raise EnvironmentError("OPENROUTER_API_KEY environment variable is not set")
+OPENROUTER_API_URL = os.environ.get("OPENROUTER_API_URL")
+if not OPENROUTER_API_URL:
+    raise EnvironmentError("OPENROUTER_API_URL environment variable is not set")
+OPENROUTER_MODELS_URL = os.environ.get("OPENROUTER_MODELS_URL", "https://openrouter.ai/api/v1/models")
 SETTINGS_PATH = os.path.expanduser("~/.factory/settings.json")
 BACKUP_DIR = os.path.expanduser("~/.factory/backups")
 
@@ -161,8 +166,8 @@ def build_custom_models(models):
             "model": model_id,
             "id": f"custom:{model_id}-[OpenRouter]-{idx}",
             "index": idx,
-            "baseUrl": BASE_URL,
-            "apiKey": OPENROUTER_API_KEY,
+            "baseUrl": OPENROUTER_API_URL,
+            "apiKey": "${OPENROUTER_API_KEY}",
             "displayName": get_display_name(model, price_per_million),
             "maxOutputTokens": get_max_output_tokens(model),
             "noImageSupport": True,
